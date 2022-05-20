@@ -1,0 +1,32 @@
+{
+  "name": "@razee/impersonationwebhook",
+  "version": "0.0.0-dev",
+  "description": "Razee: component to support impersonation.",
+  "main": "./src/index.js",
+  "scripts": {
+    "start": "node /src/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:razee-io/ImpersonationWebhook.git"
+  },
+  "contributors": [
+    {
+      "name": "Khoi Nguyen"
+    }
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@razee/kubernetes-util": "^0.3.1",
+    "@kubernetes/client-node": "^0.16.3",
+    "node-fetch": "^2.6.1",
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "fs": "0.0.1-security",
+    "https": "^1.0.0",
+    "object-path": "^0.11.8"
+  }
+}
