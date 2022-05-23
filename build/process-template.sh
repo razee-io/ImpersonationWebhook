@@ -1,3 +1,4 @@
+#!/bin/bash
 ################################################################################
 # Copyright 2022 IBM Corp. All Rights Reserved.
 #
@@ -13,29 +14,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 ################################################################################
-#######################################
-# Build the preliminary image
-#######################################
-FROM node:lts-alpine as buildImg
+set -e
 
-RUN apk update
-RUN apk --no-cache add python3 make curl
+FILE="${1}"
+THIS_DIR=$(dirname "${BASH_SOURCE[0]}")
+TRAVIS_COMMIT="${TRAVIS_COMMIT:=$(git rev-parse HEAD)}"
+export TRAVIS_COMMIT
+GIT_REMOTE="$(git remote get-url origin)"
+export GIT_REMOTE
 
-USER node
-WORKDIR /home/node
+NODE_USER_ID="$(docker run -it node:lts-alpine /usr/bin/id -u node | tr -d '\r' | tr -d '\n')"
+export NODE_USER_ID
+NODE_GROUP_ID="$(docker run -it node:lts-alpine /usr/bin/id -g node | tr -d '\r' | tr -d '\n')"
+export NODE_GROUP_ID
 
-COPY --chown=node . /home/node
-RUN npm install --production --loglevel=warn
-RUN node -v
+envsubst <"${THIS_DIR}/viewTemplate.json" >/tmp/view.json
 
-#######################################
-# Build the production image
-#######################################
-FROM node:lts-alpine
-
-USER node
-WORKDIR /home/node
-
-COPY --chown=node --from=buildImg /home/node /home/node
-
-CMD ["./bin/impersonation-webhook"]
+npx mustache /tmp/view.json "${FILE}"
