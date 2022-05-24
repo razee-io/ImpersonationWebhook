@@ -89,7 +89,7 @@ async function processRequest(request) {
     try {
       let userCanImpersonate = await checkUserPermission(request.namespace, authenticatedUser, 'users', 'impersonate');
       if (!userCanImpersonate) {
-        log.info(`${authenticatedUser} doesn't have impersonate permission`);
+        log.debug(`${authenticatedUser} doesn't have impersonate permission.`);
         impersonateUser = authenticatedUser;
         changed = true;
       }
@@ -123,21 +123,25 @@ async function processRequest(request) {
     }
   }
   else {
-    log.error('Was unable to validate if authenticated user can impersonate others');
-    objectPath.set(reviewResponse, 'response.status.message', 'Was unable to validate if authenticated user can impersonate others');
+    log.error('Was unable to validate if authenticated user can impersonate others.');
+    objectPath.set(reviewResponse, 'response.status.message', 'Was unable to validate if authenticated user can impersonate others.');
   }
 
   return reviewResponse;
 }
 
 async function main() {
-  app.post('/', async (req, res) => {
+  app.post('/validate', async (req, res) => {
     if (req.body.request === undefined || req.body.request.uid === undefined) {
       res.status(400).send();
-      return;
     }
-    res.send(await processRequest(req.body.request));
+    else {
+      res.status(200).send(await processRequest(req.body.request));
+    }
   });
+
+  app.get("/readyz", (req, res) => res.status(200).json({ status: "ok" }).send());
+  app.get("/livez", (req, res) => res.status(200).json({ status: "ok" }).send());
 
   https.createServer(options, app).listen(port, () => {
     log.info(`${appName} is running on ${port}`);
@@ -149,7 +153,7 @@ function createEventListeners() {
     log.info('recieved SIGTERM. not handling at this time.');
   });
   process.on('unhandledRejection', (reason) => {
-    log.error('received unhandledRejection', reason);
+    log.error('received unhandledRejection.', reason);
   });
   process.on('beforeExit', (code) => {
     log.info(`No work found. exiting with code: ${code}`);
