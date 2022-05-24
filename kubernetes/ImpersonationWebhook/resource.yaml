@@ -95,7 +95,7 @@ items:
       - apiGroups:   ["deploy.razee.io"]
         apiVersions: ["v1alpha2"]
         operations:  ["CREATE", "UPDATE"]
-        resources:   ["remoteresources"]
+        resources:   ["mustachetemplates", "remoteresources"]
       clientConfig:
         service:
           namespace: default
