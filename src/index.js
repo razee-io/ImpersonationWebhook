@@ -18,7 +18,6 @@ const express = require('express');
 const { KubeApiConfig } = require('@razee/kubernetes-util');
 const kubeApiConfig = KubeApiConfig();
 const https = require('https');
-const fs = require('fs');
 const objectPath = require('object-path');
 const bodyParser = require('body-parser');
 const fetch = require('node-fetch');
@@ -140,8 +139,8 @@ async function main() {
     }
   });
 
-  app.get("/readyz", (req, res) => res.status(200).json({ status: "ok" }).send());
-  app.get("/livez", (req, res) => res.status(200).json({ status: "ok" }).send());
+  app.get('/readyz', (req, res) => res.status(200).json({ status: 'ok' }).send());
+  app.get('/livez', (req, res) => res.status(200).json({ status: 'ok' }).send());
 
   https.createServer(options, app).listen(port, () => {
     log.info(`${appName} is running on ${port}`);

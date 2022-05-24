@@ -11,7 +11,6 @@ script:
   # Audit npm packages. Fail build whan a PR audit fails, otherwise report the vulnerability and proceed.
   - if [ "${TRAVIS_PULL_REQUEST}" != "false" ]; then npx audit-ci --low; else npx audit-ci --low || true; fi
   - npm run lint
-  - npm test
   - docker build --rm -t "quay.io/razee/impersonation-webhook:${TRAVIS_COMMIT}" .
   - if [ -n "${TRAVIS_TAG}" ]; then docker tag quay.io/razee/impersonation-webhook:${TRAVIS_COMMIT} quay.io/razee/impersonation-webhook:${TRAVIS_TAG}; fi
   - docker images
