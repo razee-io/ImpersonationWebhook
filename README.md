@@ -21,21 +21,30 @@ Case 2: The authenticated user has impersonate permission
   to the authenticated user.
 - If `clusterAuth.impersonateUser` is set, do not change.
 
-The webhook relies on the `authorization.k8s.io` API group, specifically `SubjectAccessReview` API, to determine a user's permission.
+The webhook relies on the `authorization.k8s.io` API group, specifically
+`SubjectAccessReview` API, to determine a user's permission.
 
 ## Installation
 
 Communication between admission controllers and webhooks is via HTTPS:
 
-- Webhook servers must present a valid certificate. The certificate and key are stored in a secret.
-- Admission controllers will validate the presented certificate by using the certificate authority set in `caBundle` field in `MutatingWebhookConfiguration`.
+- Webhook servers must present a valid certificate. The certificate and key are
+  stored in a secret.
+- Admission controllers will validate the presented certificate by using the
+  certificate authority set in `caBundle` field in `MutatingWebhookConfiguration`.
 
-It's up to the user to create and manage the certificate, key, certificate authority, and rotation strategy. The certificate used in `./kubernetes/impersonation-webhook/resource.yaml` is a self-signed certificate and serves as a placeholder only.
+It's up to the user to create and manage the certificate, key, certificate
+authority, and rotation strategy. The certificate used in
+`./kubernetes/impersonation-webhook/resource.yaml` is a self-signed certificate
+and serves as a placeholder only.
 
-For your reference, the self-signed certificate, which should work for demo purpose, was created with the following command:
+For your reference, the self-signed certificate, which should work for demo
+purpose, was created with the following command:
 
 ```bash
-openssl req -x509 -newkey rsa:4096 -sha256 -days 3650 -nodes -keyout server.key -out server.crt -subj "/CN=impersonation-webhook.default.svc" -addext "subjectAltName=DNS:impersonation-webhook.default.svc"
+openssl req -x509 -newkey rsa:4096 -sha256 -days 3650 -nodes -keyout server.key 
+-out server.crt -subj "/CN=impersonation-webhook.default.svc" 
+-addext "subjectAltName=DNS:impersonation-webhook.default.svc"
 ```
 
 ## Impersonation with Nested Resources
@@ -54,8 +63,17 @@ RemoteResource 2:
   - download: A K8 deployment
 ```
 
-Assume A creates `RemoteResource 1`. If A has impersonation permission, `RemoteResource 2` will be created under the name of user B (it's equivalent to that B creates `RemoteResource 2`). Otherwise, it will be created under the name of user A.
+Assume A creates `RemoteResource 1`. If A has impersonation permission,
+`RemoteResource 2` will be created under the name of user B (it's equivalent to
+that B creates `RemoteResource 2`). Otherwise, it will be created under the name
+of user A.
 
-Assume A has impersonation permission, `RemoteResource 2` will be created under the name of user B. Recursively, if B has impersonation permission, the `K8 deployment` will be created under the name of user C. Otherwise, it will be created under the name of B.
+Assume A has impersonation permission, `RemoteResource 2` will be created under
+the name of user B. Recursively, if B has impersonation permission, the
+`K8 deployment` will be created under the name of user C. Otherwise, it will be
+created under the name of B.
 
-In this case, users should be aware of this impersonation process and make sure that necessary role bindings are created to achieve desired outcome. The webhook relies on the `authorization.k8s.io` API group, specifically `SubjectAccessReview` API, to determine a user's permission.
+In this case, users should be aware of this impersonation process and make sure
+that necessary role bindings are created to achieve desired outcome. The webhook
+relies on the `authorization.k8s.io` API group, specifically
+`SubjectAccessReview` API, to determine a user's permission.
