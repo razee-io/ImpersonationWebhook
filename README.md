@@ -45,6 +45,18 @@ openssl req -x509 -newkey rsa:4096 -sha256 -days 3650 -nodes -keyout server.key
 -addext "subjectAltName=DNS:impersonation-webhook.default.svc"
 ```
 
+After necessary updates for certificate data in
+`https://github.com/razee-io/ImpersonationWebhook/releases/latest/download/
+resource.yaml` are made, the webhook can be installed:
+
+```bash
+kubectl apply -f [updated-resource.yaml]
+```
+
+**Note**: Like other razee controllers, this webhook uses the service account,
+roles, and role bindings created by
+[razeedeploy-delta](https://github.com/razee-io/razeedeploy-delta).
+
 ## Impersonation with Nested Resources
 
 It is possible to have a deployment with multiple nested resources like this:
