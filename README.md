@@ -8,15 +8,17 @@ that create razee resources
 updates the `spec.clusterAuth.impersonateUser` field accordingly based
 on the following rules:
 
-|                                      | `clusterAuth.impersonateUser` is set                        | `clusterAuth.impersonateUser` is **not** set                      |
-| ------------------------------------ | ----------------------------------------------------------- | ----------------------------------------------------------------- |
-| **Authenticated user can impersonate**        | Do not change                                               | set `clusterAuth.impersonateUser`       to the authenticated user |
-| **Authenticated user cannot impersonate** | set `clusterAuth.impersonateUser` to the authenticated user | set `clusterAuth.impersonateUser` to the authenticated user       |
+| | `impersonateUser` set | `impersonateUser` **not** set |
+| ---| --- | --- |
+|**Authenticated user can impersonate**|not changed|authenticated user|
+|**Authenticated user can impersonate**|authenticated user|authenticated user|
 
 The webhook relies on the `authorization.k8s.io` API group, specifically
 `SubjectAccessReview` API, to determine a user's permission.
 
-Since this webhook has already performed the validation, downstream razee controllers will respect `clusterAuth.impersonateUser` value and impersonate the specified user or service account.
+Since this webhook has already performed the validation, downstream razee
+controllers will respect `clusterAuth.impersonateUser` value and impersonate
+the specified user or service account.
 
 ## Installation
 
