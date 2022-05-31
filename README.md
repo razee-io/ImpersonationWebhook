@@ -13,12 +13,14 @@ on the following rules:
 |**Authenticated user can impersonate**|not changed|authenticated user|
 |**Authenticated user can impersonate**|authenticated user|authenticated user|
 
+**Note**: "user" implies normal users or service accounts, whichever applicable.
+
 The webhook relies on the `authorization.k8s.io` API group, specifically
-`SubjectAccessReview` API, to determine a user's permission.
+`SubjectAccessReview` API, to determine the authenticated user's permission.
 
 Since this webhook has already performed the validation, downstream razee
 controllers will respect `clusterAuth.impersonateUser` value and impersonate
-the specified user or service account.
+the specified user.
 
 ## Installation
 
