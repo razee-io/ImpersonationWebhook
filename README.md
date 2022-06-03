@@ -17,6 +17,9 @@ on the following rules:
 
 The webhook relies on the `authorization.k8s.io` API group, specifically
 `SubjectAccessReview` API, to determine the authenticated user's permission.
+Refer to [Role-based access control](https://kubernetes.io/docs/reference/access-authn-authz/rbac/)
+and [checking-api-access](https://kubernetes.io/docs/reference/access-authn-authz/authorization/#checking-api-access)
+for more information.
 
 Since this webhook has already performed the validation, downstream razee
 controllers will respect `clusterAuth.impersonateUser` value and impersonate
