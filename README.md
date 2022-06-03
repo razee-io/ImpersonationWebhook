@@ -10,8 +10,8 @@ on the following rules:
 
 | | `impersonateUser` set | `impersonateUser` **not** set |
 | ---| --- | --- |
-|**Authenticated user can impersonate**|not changed|authenticated user|
-|**Authenticated user can impersonate**|authenticated user|authenticated user|
+|**The authenticated can impersonate**|not changed|authenticated user|
+|**The authenticated cannot impersonate**|authenticated user|authenticated user|
 
 **Note**: "user" implies normal users or service accounts, whichever applicable.
 
