@@ -35,12 +35,10 @@ Communication between admission controllers and webhooks is via HTTPS:
   certificate authority set in `caBundle` field in `MutatingWebhookConfiguration`.
 
 It's up to the user to create and manage the certificate, key, certificate
-authority, and rotation strategy. The certificate used in
-`./kubernetes/impersonation-webhook/resource.yaml` is a self-signed certificate
-and serves as a placeholder only.
+authority, and rotation strategy.
 
-For your reference, the self-signed certificate, which should work for demo
-purpose, was created with the following command:
+For your reference, a self-signed certificate can be quickly created with the
+following command for demo purpose:
 
 ```bash
 openssl req -x509 -newkey rsa:4096 -sha256 -days 3650 -nodes -keyout server.key 
@@ -48,17 +46,60 @@ openssl req -x509 -newkey rsa:4096 -sha256 -days 3650 -nodes -keyout server.key
 -addext "subjectAltName=DNS:impersonation-webhook.default.svc"
 ```
 
-After necessary updates for certificate data in
-`https://github.com/razee-io/ImpersonationWebhook/releases/latest/download/
-resource.yaml` are made, the webhook can be installed:
+Note: Output `server.crt` file can be used as certificate authority and server
+certificate. The `default` namespace is used in `DNS`, and it should be updated
+accordingly if the webhook is deployed in a different namespace.
 
-```bash
-kubectl apply -f [updated-resource.yaml]
-```
+1. Create secret named `impersonation` holding certificate information.
 
-**Note**: Like other razee controllers, this webhook uses the service account,
-roles, and role bindings created by
-[razeedeploy-delta](https://github.com/razee-io/razeedeploy-delta).
+   ```yaml
+    apiVersion: v1
+    kind: Secret
+    metadata:
+      name: impersonation
+    type: kubernetes.io/tls
+    data:
+      ca.crt: "certificate authority base-64 encoded"
+      tls.crt: "server certificate base-64 encoded"
+      tls.key: "server secret base-64 encoded"
+   ```
+
+2. Deploy the webhook.
+
+   **Note**: Like other razee controllers, this webhook needs the service
+   account, roles, and role bindings created by
+   [razeedeploy-delta](https://github.com/razee-io/razeedeploy-delta),
+   so they must be created first.
+
+   ```bash
+   kubectlapply -f "https://github.com/razee-io/ImpersonationWebhook/releases/latest/download/resource.yaml"
+   ```
+
+3. Create MutatingWebhookConfiguration.
+
+   Add certificate authority to `caBundle` field.
+
+   ```yaml
+    apiVersion: admissionregistration.k8s.io/v1
+    kind: MutatingWebhookConfiguration
+    metadata:
+      name: impersonation-webhook
+    webhooks:
+    - name: impersonation-webhook
+      rules:
+      - apiGroups:   ["deploy.razee.io"]
+        apiVersions: ["v1alpha2"]
+        operations:  ["CREATE", "UPDATE"]
+        resources:   ["mustachetemplates", "remoteresources"]
+      clientConfig:
+        service:
+          name: impersonation-webhook
+          path: "/validate"
+        caBundle: "certificate authority base-64 encoded"
+      admissionReviewVersions: ["v1"]
+      sideEffects: None
+      timeoutSeconds: 10
+   ```
 
 ## Impersonation with Nested Resources
 
