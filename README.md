@@ -72,7 +72,7 @@ accordingly if the webhook is deployed in a different namespace.
    so they must be created first.
 
    ```bash
-   kubectlapply -f "https://github.com/razee-io/ImpersonationWebhook/releases/latest/download/resource.yaml"
+   kubectl apply -f "https://github.com/razee-io/ImpersonationWebhook/releases/latest/download/resource.yaml"
    ```
 
 3. Create MutatingWebhookConfiguration.
