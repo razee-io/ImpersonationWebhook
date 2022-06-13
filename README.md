@@ -17,7 +17,7 @@ on the following rules:
 
 The webhook relies on the `authorization.k8s.io` API group, specifically
 `SubjectAccessReview` API, to determine the authenticated user's permission.
-Refer to [Role-based access control](https://kubernetes.io/docs/reference/access-authn-authz/rbac/)
+Refer to [role-based access control](https://kubernetes.io/docs/reference/access-authn-authz/rbac/)
 and [checking-api-access](https://kubernetes.io/docs/reference/access-authn-authz/authorization/#checking-api-access)
 for more information.
 
@@ -27,79 +27,56 @@ the specified user.
 
 ## Installation
 
+[Razee Deploy Delta](https://github.com/razee-io/razeedeploy-delta) is the
+recommended way to install this webhook.
+
 Communication between admission controllers and webhooks is via HTTPS:
 
 - Webhook servers must present a valid certificate. The certificate and key are
-  stored in a secret.
+  stored in `impersonation` secret.
 - Admission controllers will validate the presented certificate by using the
-  certificate authority set in `caBundle` field in `MutatingWebhookConfiguration`.
+  certificate authority set in `caBundle` field in `impersonation-webhook`
+  MutatingWebhookConfiguration.
 
-It's up to the user to create and manage the certificate, key, certificate
-authority, and rotation strategy.
+Note: [Razee Deploy Delta](https://github.com/razee-io/razeedeploy-delta) will
+deploy the webhook with a self-signed certificate by default. Custom
+certificate can be used by updating `impersonation` secret and
+`impersonation-webhook` MutatingWebhookConfiguration.
 
 For your reference, a self-signed certificate can be quickly created with the
 following command for demo purpose:
 
 ```bash
 openssl req -x509 -newkey rsa:4096 -sha256 -days 3650 -nodes -keyout server.key 
--out server.crt -subj "/CN=impersonation-webhook.default.svc" 
--addext "subjectAltName=DNS:impersonation-webhook.default.svc"
+-out server.crt -subj "/CN=impersonation-webhook.{NAMESPACE}.svc" 
+-addext "subjectAltName=DNS:impersonation-webhook.{NAMESPACE}.svc"
 ```
 
-Note: Output `server.crt` file can be used as certificate authority and server
-certificate. The `default` namespace is used in `DNS`, and it should be updated
-accordingly if the webhook is deployed in a different namespace.
+## Customize the webhook
 
-1. Create secret named `impersonation` holding certificate information.
+The optional `razeedeploy-config` ConfigMap can be used to customize the
+webhook.
 
-   ```yaml
-    apiVersion: v1
-    kind: Secret
-    metadata:
-      name: impersonation
-    type: kubernetes.io/tls
-    data:
-      ca.crt: "certificate authority base-64 encoded"
-      tls.crt: "server certificate base-64 encoded"
-      tls.key: "server secret base-64 encoded"
-   ```
+Because the ConfigMap is optional, if it is created the first time, you must
+restart webhook pods, so the deployment can mount the ConfigMap
+as a volume.
 
-2. Deploy the webhook.
+Example:
 
-   **Note**: Like other razee controllers, this webhook needs the service
-   account, roles, and role bindings created by
-   [razeedeploy-delta](https://github.com/razee-io/razeedeploy-delta),
-   so they must be created first.
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: razeedeploy-config
+  namespace: razee
+data:
+  enable-impersonation: "false"
+```
 
-   ```bash
-   kubectl apply -f "https://github.com/razee-io/ImpersonationWebhook/releases/latest/download/resource.yaml"
-   ```
+### Enable User Impersonation
 
-3. Create MutatingWebhookConfiguration.
-
-   Add certificate authority to `caBundle` field.
-
-   ```yaml
-    apiVersion: admissionregistration.k8s.io/v1
-    kind: MutatingWebhookConfiguration
-    metadata:
-      name: impersonation-webhook
-    webhooks:
-    - name: impersonation-webhook
-      rules:
-      - apiGroups:   ["deploy.razee.io"]
-        apiVersions: ["v1alpha2"]
-        operations:  ["CREATE", "UPDATE"]
-        resources:   ["mustachetemplates", "remoteresources"]
-      clientConfig:
-        service:
-          name: impersonation-webhook
-          path: "/validate"
-        caBundle: "certificate authority base-64 encoded"
-      admissionReviewVersions: ["v1"]
-      sideEffects: None
-      timeoutSeconds: 10
-   ```
+With `enable-impersonation` set to "false" (default), the webhook will not
+perform permission validation.
 
 ## Impersonation with Nested Resources
 

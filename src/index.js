@@ -21,6 +21,7 @@ const https = require('https');
 const objectPath = require('object-path');
 const bodyParser = require('body-parser');
 const fetch = require('node-fetch');
+const fs = require('fs-extra');
 const appName = 'ImpersonationWebhook';
 const log = require('./logger').createLogger(appName);
 
@@ -35,6 +36,17 @@ const options = {
   cert: process.env.TLS_CERT,
   key: process.env.TLS_KEY,
 };
+
+async function impersonation_enabled() {
+  let enableImpersonation = 'false';
+  let enableImpersonationPath = './config/enable-impersonation';
+  let exists = await fs.pathExists(enableImpersonationPath);
+  if (exists) {
+    enableImpersonation = await fs.readFile(enableImpersonationPath, 'utf8');
+    enableImpersonation = enableImpersonation.trim().toLowerCase();
+  }
+  return (enableImpersonation == 'true');
+}
 
 async function checkUserPermission(namespace, username, resource, action) {
   const body = {};
@@ -73,6 +85,16 @@ function createJSONPatch(op, path, value) {
 }
 
 async function processRequest(request) {
+  let reviewResponse = {};
+  objectPath.set(reviewResponse, 'apiVersion', 'admission.k8s.io/v1');
+  objectPath.set(reviewResponse, 'kind', 'AdmissionReview');
+  objectPath.set(reviewResponse, 'response.uid', request.uid);
+
+  if (!(await impersonation_enabled())) {
+    objectPath.set(reviewResponse, 'response.allowed', true);
+    return reviewResponse;
+  }
+
   const authenticatedUser = request.userInfo.username;
   const object = request.object;
   let allowed = true;
@@ -107,10 +129,6 @@ async function processRequest(request) {
     }
   }
 
-  let reviewResponse = {};
-  objectPath.set(reviewResponse, 'apiVersion', 'admission.k8s.io/v1');
-  objectPath.set(reviewResponse, 'kind', 'AdmissionReview');
-  objectPath.set(reviewResponse, 'response.uid', request.uid);
   objectPath.set(reviewResponse, 'response.allowed', allowed);
 
   if (allowed) {
