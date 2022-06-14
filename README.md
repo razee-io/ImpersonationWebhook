@@ -57,9 +57,9 @@ openssl req -x509 -newkey rsa:4096 -sha256 -days 3650 -nodes -keyout server.key
 The optional `razeedeploy-config` ConfigMap can be used to customize the
 webhook.
 
-Because the ConfigMap is optional, if it is created the first time, you must
-restart webhook pods, so the deployment can mount the ConfigMap
-as a volume.
+Because the ConfigMap is optional, if it is created after the ImpersonationWebhook
+deployment, you must restart ImpersonationWebhook deployment's
+pods, so the deployment can mount the ConfigMap as a volume.
 
 Example:
 
