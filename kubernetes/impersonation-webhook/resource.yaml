@@ -12,6 +12,8 @@ items:
     kind: Deployment
     metadata:
       name: impersonation-webhook
+      labels:
+        razee/watch-resource: "lite"
     spec:
       replicas: 1
       selector:
@@ -23,6 +25,7 @@ items:
         metadata:
           labels:
             app: impersonation-webhook
+            razee/watch-resource: "lite"
           name: impersonation-webhook
         spec:
           serviceAccountName: razeedeploy-sa
@@ -73,6 +76,15 @@ items:
                 scheme: HTTPS
                 path: /livez
                 port: 8443
+            volumeMounts:
+              - mountPath: /home/node/config
+                name: razeedeploy-config
+          volumes:
+            - name: razeedeploy-config
+              configMap:
+                name: razeedeploy-config
+                defaultMode: 400
+                optional: true
   - apiVersion: v1
     kind: Service
     metadata:
