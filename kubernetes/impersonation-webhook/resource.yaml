@@ -63,7 +63,7 @@ items:
                     name: impersonation
                     key: tls.key
             name: impersonation-webhook
-            imagePullPolicy: Never
+            imagePullPolicy: Always
             ports:
             - containerPort: 8443
             readinessProbe:
