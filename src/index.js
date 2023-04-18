@@ -15,8 +15,8 @@
  */
 
 const express = require('express');
-const { KubeClass } = require('@razee/kubernetes-util');
-const kubeApiConfig = new KubeClass();
+const { KubeApiConfig } = require('@razee/kubernetes-util');
+const kubeApiConfig = KubeApiConfig();
 const https = require('https');
 const objectPath = require('object-path');
 const bodyParser = require('body-parser');
