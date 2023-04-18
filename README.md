@@ -107,4 +107,4 @@ created under the name of B.
 In this case, users should be aware of this impersonation process and make sure
 that necessary role bindings are created to achieve desired outcome. The webhook
 relies on the `authorization.k8s.io` API group, specifically
-`SubjectAccessReview` API, to determine a user's permission. 
+`SubjectAccessReview` API, to determine a user's permission.
