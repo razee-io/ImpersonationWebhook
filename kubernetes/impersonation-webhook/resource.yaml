@@ -14,6 +14,7 @@ items:
       name: impersonation-webhook
       labels:
         razee/watch-resource: "lite"
+        app.kubernetes.io/owner: "ibm-armada-razee"
     spec:
       replicas: 1
       selector:
